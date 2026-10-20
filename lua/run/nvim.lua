@@ -5,12 +5,14 @@
 --- @field name string
 --- @field command string
 
-local M = {}
-
---- @return string
+--- @return string|nil
 local function read_package_json()
 	local root = vim.fs.root(vim.fn.getcwd(), "package.json")
 	local path = vim.fs.joinpath(root, "package.json")
+
+	if vim.fn.filereadable(path) == 0 then
+		return nil
+	end
 
 	local contents = vim.fn.readfile(path)
 	return table.concat(contents, " ")
@@ -69,13 +71,13 @@ local main = function()
 	local contents = read_package_json()
 	if not contents then
 		vim.notify("package.json not found in project root")
-		return nil
+		return
 	end
 
 	local scripts = parse_scripts(contents)
 	if not scripts then
 		vim.notify("failed to parse scripts from package.json")
-		return nil
+		return
 	end
 
 	pick(scripts)
