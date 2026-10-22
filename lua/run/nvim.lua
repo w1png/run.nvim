@@ -4,18 +4,39 @@
 
 local package_json = require("run.package-json")
 local makefile = require("run.makefile")
+local cfg_module = require("run.config")
 
 --- @param item Script
 local on_select = function(item)
+	local config = vim.g.runner_config
+
 	if not item then
 		return
 	end
-	vim.fn.system({
-		"tmux",
-		"split-window",
-		"-hd",
-		item.command .. "; exec $SHELL",
-	})
+
+	if config.run_in == "tmux" then
+		--- @type string[]
+		local cmd = {}
+		table.insert(cmd, "tmux")
+
+		if config.tmux.pane == "split" or config.tmux.pane == "vsplit" then
+			table.insert(cmd, "split-window")
+
+			if not config.tmux.switch then
+				table.insert(cmd, "-d")
+			end
+
+			if config.tmux.pane == "vsplit" then
+				table.insert(cmd, "-h")
+			end
+		end
+
+		table.insert(cmd, item.command .. "; exec $SHELL")
+
+		vim.fn.system(cmd)
+	else
+		vim.cmd('call jobstart("' .. item.command .. "\", {'term':v:true})")
+	end
 end
 
 --- @param scripts Script[]
@@ -49,11 +70,10 @@ local main = function()
 	add_scripts(package_json_scripts, scripts)
 	add_scripts(makefile_scripts, scripts)
 
-	vim.print(vim.inspect(scripts))
-
 	pick(scripts)
 end
 
 return {
 	pick = main,
+	setup = cfg_module.setup,
 }

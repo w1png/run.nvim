@@ -2,9 +2,8 @@
 
 **Planned**:
 - [x] package.json
-- [ ] Makefile
-- [ ] Cargo.toml
-- [ ] Justfile
+- [x] Makefile
+- [ ] ...
 
 ## Installation
 
@@ -16,7 +15,19 @@ vim.pack.add({
 })
 ```
 
-#### Require and call the runner
+#### Call setup and configure the plugin
+
+```lua
+require("run.nvim").setup({
+	run_in = "tmux",
+	tmux = {
+		pane = "vsplit",
+		switch = false,
+	},
+})
+```
+
+#### Call pick to start the picker
 
 ```lua
 vim.keymap.set("n", "<leader>rr", function()
